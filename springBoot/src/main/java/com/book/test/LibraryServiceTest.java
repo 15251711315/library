@@ -27,7 +27,6 @@ public class LibraryServiceTest {
     @Test
     public void testAddUser(){
         UserDTO userDTO = new UserDTO();
-        userDTO.setName("23");
         Long id = libraryService.addUser(userDTO);
         Assert.assertNotNull(id);
         userDAO.delete(id);
