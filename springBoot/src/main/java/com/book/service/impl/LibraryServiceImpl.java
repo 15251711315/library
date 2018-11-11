@@ -108,5 +108,9 @@ public class LibraryServiceImpl implements LibraryService {
         }).collect(Collectors.toList());
         return booksDTOList;
     }
-
+    @Override
+    public Long addBooks(BooksPO booksPO) {
+        BooksPO id = booksDAO.save(booksPO);
+        return id.getId();
+    }
 }

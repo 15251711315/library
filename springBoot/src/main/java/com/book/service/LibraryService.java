@@ -3,6 +3,7 @@ package com.book.service;
 import com.book.DTO.BooksDTO;
 import com.book.DTO.QueryBooksReq;
 import com.book.DTO.UserDTO;
+import com.book.PO.BooksPO;
 
 import java.util.List;
 
@@ -15,4 +16,6 @@ public interface LibraryService {
 
     //查询已选择的书籍
     List<BooksDTO> querySelectedBooks(List<Long> selectedBooksIdList);
+
+    Long addBooks(BooksPO booksPO);
 }

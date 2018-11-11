@@ -6,10 +6,9 @@ import lombok.Setter;
 import java.io.Serializable;
 import java.util.Date;
 
-
 @Getter
 @Setter
-public class BooksDTO implements Serializable{
+public class BooksDTO implements Serializable {
 
     private static final long serialVersionUID = 7597984248210317674L;
 
@@ -18,22 +17,15 @@ public class BooksDTO implements Serializable{
     private Integer num;//数量
     private String author;//作者
     private String images;//图片保存地址
-    private String desc;//描述
+    private String des;//描述
     private Date createTime;
+    private String code;
 
     @Override
-    public String
-    toString() {
-        return "BooksDTO{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", num=" + num +
-                ", author='" + author + '\'' +
-                ", images='" + images + '\'' +
-                ", desc='" + desc + '\'' +
-                ", createTime=" + createTime +
-                '}';
+    public String toString() {
+        return "BooksDTO{" + "id=" + id + ", name='" + name + '\'' + ", num=" + num + ", author='" + author + '\''
+            + ", images='" + images + '\'' + ", des='" + des + '\'' + ", createTime=" + createTime + ", code='" + code
+            + '\'' + '}';
     }
-
 
 }
