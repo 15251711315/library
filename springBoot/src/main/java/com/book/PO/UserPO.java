@@ -22,41 +22,18 @@ public class UserPO implements Serializable{
     @Column(name="name")
     private String name;
 
-    @Column(name="flag")
-    private String flag;
+    @Column(name="nick_Name")
+    private  String nickName;
 
-    public Long getId() {
-        return id;
-    }
+    @Column(name="openid")
+    private String openid;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getFlag() {
-        return flag;
-    }
-
-    public void setFlag(String flag) {
-        this.flag = flag;
-    }
+    @Column(name="avatar_Url")
+    private String avatarUrl;
 
     @Override
     public String toString() {
-        return "UserPO{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", flag='" + flag + '\'' +
-                '}';
+        return "UserPO{" + "id=" + id + ", name='" + name + '\'' + ", nickName='" + nickName + '\'' + ", openid='"
+            + openid + '\'' + ", avatarUrl='" + avatarUrl + '\'' + '}';
     }
-
-
 }

@@ -14,15 +14,21 @@ public class UserDTO implements Serializable{
 
     private String name;
 
-    private String flag;//权限
+//    private String flag;//权限
 
+    private  String nickName;
+
+    private String openid;
+
+    private String avatarUrl;
+
+//    private  String province;
+//
+//    private String city;
 
     @Override
     public String toString() {
-        return "UserDTO{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", flag='" + flag + '\'' +
-                '}';
+        return "UserDTO{" + "id=" + id + ", name='" + name + '\'' + ", nickName='" + nickName + '\'' + ", openid='"
+            + openid + '\'' + ", avatarUrl='" + avatarUrl + '\'' + '}';
     }
 }

@@ -5,10 +5,11 @@
   <title>Title</title>
 </head>
 <body>
-<form action="/books/addBooks1" method="post">
+<form action="/books/addBooks1" method="post" enctype="multipart/form-data">
   <input type="text" id="name" name="name" value="" placeholder="书名"/>
   <input type="text" id="num" name="num" value="" placeholder="数量"/>
   <input type="text" id="code" name="code" value="" placeholder="编号"/>
+  <input type="file" value="选择execl文件"/>
   <input type="submit" value="保存"/>
 </form>
 </body>

@@ -1,13 +1,16 @@
 package com.book.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.book.DAO.BooksDAO;
 import com.book.DAO.UserDAO;
 import com.book.DTO.BooksDTO;
+import com.book.DTO.OpenIdDTO;
 import com.book.DTO.QueryBooksReq;
 import com.book.DTO.UserDTO;
 import com.book.PO.BooksPO;
 import com.book.PO.UserPO;
 import com.book.service.LibraryService;
+import com.book.utils.HttpGetUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -22,8 +25,13 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
@@ -61,6 +69,7 @@ public class LibraryServiceImpl implements LibraryService {
                     if (StringUtils.isNotBlank(req.getName())) {
                         predicate.getExpressions().add(cb.equal(root.get("name"), req.getName()));
                     }
+              //      predicate.getExpressions().add(cb.notEqual(root.get("num"), 0));
                     return predicate;
                 }
             };
@@ -76,6 +85,51 @@ public class LibraryServiceImpl implements LibraryService {
             log.debug("queryBooks excute failed:{},req:{}", e, req);
         }
         return booksDTOList;
+    }
+
+
+
+    @Override
+    public List<BooksDTO> querySelectedBooks(List<Long> selectedBooksIdList) {
+        List<BooksPO> booksPOList = new ArrayList<>();
+        List<BooksDTO> booksDTOList = null;
+        booksPOList = booksDAO.findByIdIn(selectedBooksIdList);
+        booksDTOList = booksPOList.stream().map(booksPO -> {
+            BooksDTO booksDTO = new BooksDTO();
+            BeanUtils.copyProperties(booksPO, booksDTO);
+            return booksDTO;
+        }).collect(Collectors.toList());
+        return booksDTOList;
+    }
+    @Override
+    public Long addBooks(BooksPO booksPO) {
+        BooksPO id = booksDAO.save(booksPO);
+        return id.getId();
+    }
+
+    @Override
+    public String achieveOpenid (HttpServletRequest request,HttpServletResponse response) {
+        try {
+        response.setContentType("text/html");
+            request.setCharacterEncoding("UTF-8");
+
+        response.setCharacterEncoding("UTF-8");
+        String code = request.getParameter("code");//获取code
+        Map params = new HashMap();
+        params.put("secret", "fe88670a5b342218dc6e1a69475574d6");
+        params.put("appid", "wx97bb89632b1624c8");
+        params.put("grant_type", "authorization_code");
+        params.put("js_code", code);
+        String result = HttpGetUtil.httpRequestToString(
+            "https://api.weixin.qq.com/sns/jscode2session", params);
+
+        OpenIdDTO openidDTO = JSON.parseObject(result, OpenIdDTO.class);
+        String openid = openidDTO.getOpenid();
+        return openid;
+    } catch (UnsupportedEncodingException e) {
+        e.printStackTrace();
+    }
+    return null;
     }
 
     @Override
@@ -97,20 +151,10 @@ public class LibraryServiceImpl implements LibraryService {
     }
 
     @Override
-    public List<BooksDTO> querySelectedBooks(List<Long> selectedBooksIdList) {
-        List<BooksPO> booksPOList = new ArrayList<>();
-        List<BooksDTO> booksDTOList = null;
-        booksPOList = booksDAO.findByIdIn(selectedBooksIdList);
-        booksDTOList = booksPOList.stream().map(booksPO -> {
-            BooksDTO booksDTO = new BooksDTO();
-            BeanUtils.copyProperties(booksPO, booksDTO);
-            return booksDTO;
-        }).collect(Collectors.toList());
-        return booksDTOList;
-    }
-    @Override
-    public Long addBooks(BooksPO booksPO) {
-        BooksPO id = booksDAO.save(booksPO);
-        return id.getId();
+    public UserDTO queryUserInfo(String openid){
+        UserPO userPO = userDAO.findByOpenid(openid);
+        UserDTO userDTO = new UserDTO();
+        BeanUtils.copyProperties(userPO,userDTO);
+        return userDTO;
     }
 }
