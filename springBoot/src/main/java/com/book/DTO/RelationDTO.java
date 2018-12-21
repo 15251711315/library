@@ -1,5 +1,7 @@
 package com.book.DTO;
 
+import com.book.PO.BooksPO;
+import com.book.PO.UserPO;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,13 +16,11 @@ public class RelationDTO implements Serializable{
     private Long id;
     private Long userId;
     private Long booksId;
-    private Date createTime;
-    private Date returnTime;
+    private String createTime;
+    private String returnTime;
     private Integer flag;
-
-    @Override
-    public String toString() {
-        return "RelationDTO{" + "id=" + id + ", userId=" + userId + ", booksId=" + booksId + ", createTime="
-            + createTime + ", returnTime=" + returnTime + ", flag=" + flag + '}';
-    }
+    private BooksPO booksPO;
+    private UserPO userPO;
+//    private BooksDTO booksDTO;
+//    private UserDTO userDTO;
 }

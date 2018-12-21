@@ -2,12 +2,11 @@ package com.book.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.book.DAO.BooksDAO;
+import com.book.DAO.RelationDAO;
 import com.book.DAO.UserDAO;
-import com.book.DTO.BooksDTO;
-import com.book.DTO.OpenIdDTO;
-import com.book.DTO.QueryBooksReq;
-import com.book.DTO.UserDTO;
+import com.book.DTO.*;
 import com.book.PO.BooksPO;
+import com.book.PO.RelationPO;
 import com.book.PO.UserPO;
 import com.book.service.LibraryService;
 import com.book.utils.HttpGetUtil;
@@ -28,6 +27,8 @@ import javax.persistence.criteria.Root;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.UnsupportedEncodingException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,17 +39,21 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class LibraryServiceImpl implements LibraryService {
-
+    DateFormat df = new SimpleDateFormat("yyyyMMdd");
     @Autowired
     private BooksDAO booksDAO;
 
     @Autowired
     private UserDAO userDAO;
 
+    @Autowired
+    private RelationDAO relationDAO;
+
     @Override
     public List<BooksDTO> queryBooks(QueryBooksReq req) {
         List<BooksPO> booksPOList = new ArrayList<>();
         List<BooksDTO> booksDTOList = null;
+
         try {
             Specification<BooksPO> specification = new Specification<BooksPO>() {
                 @Override
@@ -156,5 +161,30 @@ public class LibraryServiceImpl implements LibraryService {
         UserDTO userDTO = new UserDTO();
         BeanUtils.copyProperties(userPO,userDTO);
         return userDTO;
+    }
+
+    @Override
+    public Map<String,List<RelationDTO>> queryReadBooks(Long userId) {
+        Map<String,List<RelationDTO>> result = new HashMap<>();
+        List<RelationDTO> readingList = new ArrayList<>();
+        List<RelationDTO> returnedList = new ArrayList<>();
+        List<RelationPO> relationPOList = relationDAO.queryByUserId(userId);
+        for(RelationPO relationPO :relationPOList){
+            RelationDTO relationDTO = new RelationDTO();
+            if(1==relationPO.getFlag()){
+                BeanUtils.copyProperties(relationPO,relationDTO);
+                relationDTO.setCreateTime(df.format(relationPO.getCreateTime()));
+                relationDTO.setReturnTime(df.format(relationPO.getReturnTime()));
+                returnedList.add(relationDTO);
+            }
+            if(0==relationPO.getFlag()){
+                BeanUtils.copyProperties(relationPO,relationDTO);
+                relationDTO.setCreateTime(df.format(relationPO.getCreateTime()));
+                readingList.add(relationDTO);
+            }
+        }
+        result.put("reading",readingList);
+        result.put("returned",returnedList);
+        return result;
     }
 }

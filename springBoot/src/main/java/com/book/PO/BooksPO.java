@@ -5,7 +5,10 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 //书本PO
 @Table(name = "books")
@@ -30,7 +33,8 @@ public class BooksPO implements Serializable {
     @Column(name = "create_time")
     private Date createTime;
     @Column(name = "code")
-    private String code;
+    private String code;//书编号
+
 
     public Long getId() {
         return id;

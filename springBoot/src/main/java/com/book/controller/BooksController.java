@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.book.DAO.UserDAO;
 import com.book.DTO.*;
 import com.book.PO.BooksPO;
+import com.book.PO.RelationPO;
 import com.book.service.LibraryService;
 import com.book.utils.DealExcel;
 import com.book.utils.HttpGetUtil;
@@ -51,32 +52,6 @@ public class BooksController {
         return JSON.toJSONString(booksDTOList);
     }
 
-    @RequestMapping(value = "/addBooks1")
-    public String addBooks1(BooksPO booksPO) {
-//        booksPO.setImages("https://www.baohaiya.top/bookPics/no.jpg");
-//        booksPO.setAuthor("");
-//        booksPO.setCreateTime(new Date());
-//        booksPO.setDes("");
-//        long id = libraryService.addBooks(booksPO);
-        DealExcel d =  new DealExcel();
-        InputStream io = null;
-        try {
-            io = new FileInputStream("C:\\Users\\战神包\\Desktop\\1.xlsx");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        List<Object> list =  d.importDataFromExcel(new Excel(),io,"1.xlsx");
-        for(Object o:list){
-            System.out.println(o);
-        }
-        return "addBooks";
-    }
-
-    @RequestMapping(value = "/addBooks")
-    public String addBooks(BooksPO booksPO) {
-        return "addBooks";
-    }
-
     @RequestMapping(value = "/achieveOpenid")
     @ResponseBody
     public String achieveOpenid(HttpServletRequest request,HttpServletResponse response) throws Exception{
@@ -100,6 +75,43 @@ public class BooksController {
         return JSON.toJSONString(userDTO);
     }
 
-//    @RequestMapping(value="")
+    @RequestMapping(value="queryReadBooks")
+    @ResponseBody
+    public String queryReadBooks(Long userId){
+       Map<String,List<RelationDTO>> result = new HashMap<>();
+        result = libraryService.queryReadBooks(userId);
+        return JSON.toJSONString(result);
+    }
 
+
+
+//网页
+    @RequestMapping(value = "/addBooks1")
+    public String addBooks1(BooksPO booksPO) {
+        //        booksPO.setImages("https://www.baohaiya.top/bookPics/no.jpg");
+        //        booksPO.setAuthor("");
+        //        booksPO.setCreateTime(new Date());
+        //        booksPO.setDes("");
+        //        long id = libraryService.addBooks(booksPO);
+        DealExcel d =  new DealExcel();
+        InputStream io = null;
+        try {
+            io = new FileInputStream("C:\\Users\\战神包\\Desktop\\1.xlsx");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        List<Object> list =  d.importDataFromExcel(new Excel(),io,"1.xlsx");
+        for(Object o:list){
+            System.out.println(o);
+        }
+        return "addBooks";
+    }
+
+    @RequestMapping(value = "/addBooks")
+    public String addBooks(BooksPO booksPO) {
+        return "addBooks";
+    }
+
+    @RequestMapping(value = "/index")
+    public String index(){}
 }
