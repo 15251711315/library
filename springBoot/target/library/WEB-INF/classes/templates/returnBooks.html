@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <link href="../css/bootstrap.min.css" rel="stylesheet"/>
+  <title>Title</title>
+  <script type="text/javascript" src="../js/jquery-3.3.1.min.js"></script>
+  <script type="text/javascript" src="../js/bootstrap.min.js"></script>
+</head>
+<body>
+  <ul class="nav nav-pills">
+    <li role="presentation" class="active"><a href="index">Home</a></li>
+    <li role="presentation"><a href="addBooks">添加图书信息</a></li>
+    <li role="presentation"><a href="addRelation">添加借阅信息</a></li>
+    <li role="presentation"><a href="approval">审批界面</a></li>
+    <li role="presentation"><a href="returnBooks">还书界面</a></li>
+  </ul>
+  <button onclick="queryRelations()">查询</button>
+  <table id="tabletest">
+
+  </table>
+
+</body>
+
+<script type="text/javascript">
+function queryRelations() {
+  $("#tabletest").html("");
+  $("#tabletest").append('<tr> <td>id</td>  <td>&nbsp;&nbsp;&nbsp;</td>  <td>书id</td>  <td>&nbsp;&nbsp;&nbsp;</td>  <td>姓名</td>  <td>&nbsp;&nbsp;&nbsp;</td>  <td>微信名</td>  <td>&nbsp;&nbsp;&nbsp;</td>  <td>书名</td>  <td>&nbsp;&nbsp;&nbsp;</td>  <td>借书时间</td>  <td>&nbsp;&nbsp;&nbsp;</td>  <td>操作</td>  </tr>')
+  $.ajax({
+    type:"POST",
+    url:"queryRelations",
+    dataType: "json",
+    error:function(data){
+      alert("连接超时");
+    },
+    success:function(data){
+
+      for( i in data){
+        var tr;
+        tr='<td>'+data[i].id+'</td><td></td>'+'<td>'+data[i].booksPO.id+'</td><td></td>'+'<td>'+data[i].userPO.name+'</td><td></td>'+'<td>'+data[i].userPO.nickName+'</td><td></td>'+'<td>'+data[i].booksPO.name+'</td><td></td>'+'<td>'+data[i].createTime+'</td><td></td>'+'<td><button onclick="returnBooks(this)">确认还书</button></td>'
+        $("#tabletest").append('<tr>'+tr+'</tr>')
+
+      }
+    }
+  });
+}
+
+function returnBooks(m) {
+  $.ajax({
+    type:"POST",
+    url:"doReturnBooks",
+    data:{relationId:m.parentNode.parentNode.children[0].innerHTML,
+      bookId:m.parentNode.parentNode.children[2].innerHTML},
+    success:function(data){
+      alert("还书成功");
+      queryRelations();
+    }
+  });
+}
+
+</script>
+</html>

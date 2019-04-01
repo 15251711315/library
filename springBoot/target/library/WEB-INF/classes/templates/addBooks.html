@@ -1,16 +1,78 @@
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
+
   <meta charset="UTF-8"/>
+  <link href="../css/bootstrap.min.css" rel="stylesheet"/>
   <title>Title</title>
+  <script type="text/javascript" src="../js/jquery-3.3.1.min.js"></script>
+  <script type="text/javascript" src="../js/bootstrap.min.js"></script>
 </head>
 <body>
-<form action="/books/addBooks1" method="post" enctype="multipart/form-data">
+<ul class="nav nav-pills">
+  <li role="presentation" class="active"><a href="index">Home</a></li>
+  <li role="presentation"><a href="addBooks">添加图书信息</a></li>
+  <li role="presentation"><a href="addRelation">添加借阅信息</a></li>
+  <li role="presentation"><a href="approval">审批界面</a></li>
+  <li role="presentation"><a href="returnBooks">还书界面</a></li>
+</ul>
+单个添加:
+<form action="/books/doAddBooks" method="post" id="myform1">
   <input type="text" id="name" name="name" value="" placeholder="书名"/>
-  <input type="text" id="num" name="num" value="" placeholder="数量"/>
   <input type="text" id="code" name="code" value="" placeholder="编号"/>
-  <input type="file" value="选择execl文件">
-  <input type="submit" value="保存"/>
+ <button onclick="addBooks(1)">保存</button>
 </form>
+
+<!--批量添加:
+<form action="/books/doAddBooks" method="post" enctype="multipart/form-data" id="myform2">
+  <input type="file" value="选择execl文件"/>
+  <button onclick="addBooks(2)">保存</button>
+</form>-->
+
+<button onclick="queryBooks()">查询所有书</button>
+<table id="tabletest">
+
+
+</table>
+
 </body>
+<script type="text/javascript">
+  function addBooks(type) {
+    if(type==1){
+      alert("添加成功")
+$("#myform1").submit();
+    }else if(type==2){
+      $("#myform2").submit();
+    }
+  }
+
+
+  function queryBooks(){
+    $("#tabletest").html("");
+    $("#tabletest").append('<tr>\n'
+        + '    <td>书名</td>\n'
+        + '    <td>数量</td>\n'
+        + '    <td>作者</td>\n'
+        + '    <td>编号</td>\n'
+        + '  </tr>')
+    $.ajax({
+      type:"POST",
+      url:"queryBooks",
+      dataType: "json",
+      error:function(data){
+        alert("连接超时");
+      },
+      success:function(data){
+        for( i in data){
+          var tr;
+          tr='<td>'+data[i].name+'      </td>$nbsp;$nbsp;'+'        <td>'+data[i].num+'       </td>$nbsp;$nbsp;'+'     <td>'+data[i].author+'     </td>$nbsp;$nbsp;'+'      <td>'+data[i].code+'</td>'
+          $("#tabletest").append('<tr>'+tr+'</tr>')
+
+        }
+      }
+    });
+  }
+</script>
 </html>

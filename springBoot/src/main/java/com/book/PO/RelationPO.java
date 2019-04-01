@@ -16,6 +16,7 @@ public class RelationPO implements Serializable{
     private static final long serialVersionUID = -363886288824300161L;
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="id")
    private Long id;
 

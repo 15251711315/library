@@ -11,5 +11,9 @@ import java.util.List;
 
 public interface RelationDAO extends JpaRepository<RelationPO, Long>, JpaSpecificationExecutor<RelationPO> {
 
-    List<RelationPO> queryByUserId(@Param("userId") Long userId);
+    List<RelationPO> findByUserId(@Param("userId") Long userId);
+
+    List<RelationPO> findByFlag(@Param("flag") Integer flag);
+
+    List<RelationPO> findById(@Param("id") Long id);
 }

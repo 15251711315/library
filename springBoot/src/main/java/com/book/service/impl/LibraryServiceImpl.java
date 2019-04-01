@@ -29,10 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -74,7 +71,7 @@ public class LibraryServiceImpl implements LibraryService {
                     if (StringUtils.isNotBlank(req.getName())) {
                         predicate.getExpressions().add(cb.equal(root.get("name"), req.getName()));
                     }
-              //      predicate.getExpressions().add(cb.notEqual(root.get("num"), 0));
+                    predicate.getExpressions().add(cb.notEqual(root.get("num"), 0));
                     return predicate;
                 }
             };
@@ -121,15 +118,16 @@ public class LibraryServiceImpl implements LibraryService {
         response.setCharacterEncoding("UTF-8");
         String code = request.getParameter("code");//获取code
         Map params = new HashMap();
-        params.put("secret", "fe88670a5b342218dc6e1a69475574d6");
+        params.put("secret", "308fcf3739300a17f7ced736b0b2e978");
         params.put("appid", "wx97bb89632b1624c8");
         params.put("grant_type", "authorization_code");
         params.put("js_code", code);
         String result = HttpGetUtil.httpRequestToString(
-            "https://api.weixin.qq.com/sns/jscode2session", params);
+            "https://api.weixin.qq.com/sns/jscode2session","GET", params);
 
         OpenIdDTO openidDTO = JSON.parseObject(result, OpenIdDTO.class);
         String openid = openidDTO.getOpenid();
+            System.out.println("achieveOpenid，openid="+openid);
         return openid;
     } catch (UnsupportedEncodingException e) {
         e.printStackTrace();
@@ -143,6 +141,9 @@ public class LibraryServiceImpl implements LibraryService {
         try {
             UserPO userPO = new UserPO();
             BeanUtils.copyProperties(userDTO, userPO);
+            if(userDAO.findByOpenid(userDTO.getOpenid())!=null&&userDAO.findByOpenid(userDTO.getOpenid()).getId()!=null){
+                return 1L;
+            }
             result = userDAO.save(userPO);
             if (result == null) {
                 return null;
@@ -156,11 +157,11 @@ public class LibraryServiceImpl implements LibraryService {
     }
 
     @Override
-    public UserDTO queryUserInfo(String openid){
+    public UserPO queryUserInfo(String openid){
         UserPO userPO = userDAO.findByOpenid(openid);
         UserDTO userDTO = new UserDTO();
-        BeanUtils.copyProperties(userPO,userDTO);
-        return userDTO;
+//        BeanUtils.copyProperties(userPO,userDTO);
+        return userPO;
     }
 
     @Override
@@ -168,7 +169,7 @@ public class LibraryServiceImpl implements LibraryService {
         Map<String,List<RelationDTO>> result = new HashMap<>();
         List<RelationDTO> readingList = new ArrayList<>();
         List<RelationDTO> returnedList = new ArrayList<>();
-        List<RelationPO> relationPOList = relationDAO.queryByUserId(userId);
+        List<RelationPO> relationPOList = relationDAO.findByUserId(userId);
         for(RelationPO relationPO :relationPOList){
             RelationDTO relationDTO = new RelationDTO();
             if(1==relationPO.getFlag()){
@@ -186,5 +187,60 @@ public class LibraryServiceImpl implements LibraryService {
         result.put("reading",readingList);
         result.put("returned",returnedList);
         return result;
+    }
+
+    @Override
+    public String submitBooks(List<RelationDTO> relationDTOList) {
+        try{
+            for(RelationDTO relationDTO:relationDTOList){
+                Long bookId = relationDTO.getBooksId();
+                List<BooksPO> booksPOList = booksDAO.findById(bookId);
+                if(booksPOList!=null&&booksPOList.size()!=0){
+                    if(booksPOList.get(0).getNum()==0){
+                        return null;
+                    }
+                    RelationPO relationPO = new RelationPO();
+                    BeanUtils.copyProperties(relationDTO,relationPO);
+                    relationPO.setCreateTime(new Date());
+                    relationPO.setFlag(0);
+                    relationDAO.save(relationPO);
+                    BooksPO booksPO = booksPOList.get(0);
+                    int num = booksPO.getNum();
+                    num-=1;
+                    booksPO.setNum(num);
+                    booksDAO.save(booksPO);
+                };
+            }
+            return "OK";
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
+        return "false";
+    }
+
+    public List<RelationDTO> queryRelations(){
+        List<RelationPO> relationPOList = relationDAO.findByFlag(0);
+        List<RelationDTO> returnedList = new ArrayList<>();
+        for(RelationPO relationPO :relationPOList){
+            RelationDTO relationDTO = new RelationDTO();
+                BeanUtils.copyProperties(relationPO,relationDTO);
+                relationDTO.setCreateTime(df.format(relationPO.getCreateTime()));
+                returnedList.add(relationDTO);
+        }
+       return returnedList;
+    }
+
+    public  String doReturnBooks(Long relationId,Long bookId){
+        List<RelationPO> relationPOList = relationDAO.findById(relationId);
+        List<BooksPO> booksPOList = booksDAO.findById(bookId);
+        RelationPO relationPO = relationPOList.get(0);
+        BooksPO booksPO = booksPOList.get(0);
+        relationPO.setFlag(1);
+        relationPO.setReturnTime(new Date());
+        booksPO.setNum(1);
+        relationDAO.save(relationPO);
+        booksDAO.save(booksPO);
+        return "OK";
     }
 }

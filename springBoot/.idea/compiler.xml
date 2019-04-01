@@ -9,5 +9,8 @@
         <module name="springBoot" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="springBoot" target="1.8" />
+    </bytecodeTargetLevel>
   </component>
 </project>

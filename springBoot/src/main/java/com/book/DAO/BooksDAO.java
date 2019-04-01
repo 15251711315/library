@@ -10,4 +10,6 @@ public interface BooksDAO extends JpaRepository<BooksPO, Long>, JpaSpecification
     List<BooksPO> findByNameLike(String name);
 
     List<BooksPO> findByIdIn(List<Long> selectedBooksIdList);
+
+    List<BooksPO> findById(Long id);
 }

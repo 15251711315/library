@@ -6,6 +6,7 @@ import com.book.DTO.RelationDTO;
 import com.book.DTO.UserDTO;
 import com.book.PO.BooksPO;
 import com.book.PO.RelationPO;
+import com.book.PO.UserPO;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -27,8 +28,17 @@ public interface LibraryService {
     //登录注册
     Long addUser(UserDTO userDTO);
 
-    public UserDTO queryUserInfo(String openid);
+    public UserPO queryUserInfo(String openid);
 
     //查询已借书
     public Map<String,List<RelationDTO>> queryReadBooks(Long userId);
+
+    //借书
+    public String submitBooks(List<RelationDTO> relationDTOList);
+
+    //查询还没还书
+    public List<RelationDTO> queryRelations();
+
+    //还书
+    public  String doReturnBooks(Long relationId,Long bookId);
 }
