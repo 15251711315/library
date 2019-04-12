@@ -72,6 +72,8 @@ public class HttpGetUtil {
             // 设置通用的请求属性
             conn.setRequestProperty("accept", "*/*");
             conn.setRequestProperty("connection", "Keep-Alive");
+            conn.setRequestProperty("Accept-Charset", "UTF-8");
+            conn.setRequestProperty("contentType", "utf-8");
             conn.setRequestProperty("user-agent",
                 "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1;SV1)");
             // 发送POST请求必须设置如下两行
@@ -79,6 +81,7 @@ public class HttpGetUtil {
             conn.setDoInput(true);
             // 获取URLConnection对象对应的输出流
             out = new PrintWriter(conn.getOutputStream());
+
             // 发送请求参数
             out.print(param);
             // flush输出流的缓冲

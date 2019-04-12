@@ -13,6 +13,7 @@ import com.book.PO.UserPO;
 import com.book.service.LibraryService;
 import com.book.utils.DealExcel;
 import com.book.utils.HttpGetUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.formula.functions.T;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory;
@@ -38,6 +39,23 @@ public class BooksController {
 DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
     @Autowired
     private LibraryService libraryService;
+
+    @ResponseBody
+    @RequestMapping(value = "/complete")
+    public String complete(HttpServletRequest request,HttpServletResponse response) throws Exception{
+        String openid = achieveOpenid(request,response);
+        UserDTO userDTO = new UserDTO();
+        userDTO.setOpenid(openid);
+        userDTO.setAvatarUrl(request.getParameter("avatarUrl"));
+        userDTO.setNickName(request.getParameter("nickName"));
+        String r = addUser(userDTO);
+        UserPO result = new UserPO();
+        if("SUCCESS".equals(r)){
+            result  = libraryService.queryUserInfo(openid);
+        }
+        return JSON.toJSONString(result);
+    }
+
 
     //查询书
     @ResponseBody
@@ -74,6 +92,10 @@ DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
     @RequestMapping(value="/addUser")
     @ResponseBody
     public String  addUser(UserDTO userDTO){
+
+        if(StringUtils.isBlank(userDTO.getOpenid())||"undefined".equals(userDTO.getOpenid())){
+            return null;
+        }
        Long id = libraryService.addUser(userDTO);
        if(id!=null)
        return "SUCCESS";
@@ -83,8 +105,8 @@ DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
     @RequestMapping(value="queryUserInfo")
     @ResponseBody
     public String queryUserInfo(String openid){
-        UserPO userDTO = libraryService.queryUserInfo(openid);
-        return JSON.toJSONString(userDTO);
+        UserPO userPO= libraryService.queryUserInfo(openid);
+        return JSON.toJSONString(userPO);
     }
 
     @RequestMapping(value="queryReadBooks")
@@ -235,61 +257,7 @@ DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
             name.substring(0,name.length()-1);
             String result =  libraryService.submitBooks(relationDTOList);
             if("OK".equals(result)){
-                response.setContentType("text/html");
-                request.setCharacterEncoding("UTF-8");
-                response.setCharacterEncoding("UTF-8");
-                Map params = new HashMap();
-                params.put("grant_type", "client_credential");
-                params.put("appid", "wx97bb89632b1624c8");
-                params.put("secret", "308fcf3739300a17f7ced736b0b2e978");
-                String r = HttpGetUtil.httpRequestToString(
-                    "https://api.weixin.qq.com/cgi-bin/token","GET" ,params);
-
-                AccessTokenDTO accessTokenDTO = JSON.parseObject(r, AccessTokenDTO.class);
-                String access = accessTokenDTO.getAccess_token();
-                System.out.println("access:"+access);
-                System.out.println("formId:"+formId);
-                SendTemplateMessage sendTemplateMessage = new SendTemplateMessage();
-                /*//拼接数据
-                Map<String,TemplateData> map = new HashMap<>();
-                map.put("keyword1",new TemplateData(String.valueOf(booksPOList.size())));
-                map.put("keyword2",new TemplateData(name));
-                map.put("keyword3",new TemplateData(df.format(new Date())));
-                sendTemplateMessage.setTouser(openid);
-                sendTemplateMessage.setTemplate_id("ZPbSl2GmWzTGhxbZPzbgl8IaCF3-e0FsKkQ04gAm5ao");
-                sendTemplateMessage.setPage("");
-                sendTemplateMessage.setForm_id(formId);
-                sendTemplateMessage.setData(map);
-                sendTemplateMessage.setEmphasis_keyword("");
-                String json =  JSONObject.toJSONString(sendTemplateMessage);*/
-                Map<String,TemplateData> m = new HashMap<>();
-               Map params2 = new HashMap();
-//                m.put("keyword1",String.valueOf(booksPOList.size()));
-//                m.put("keyword2",name);
-//                m.put("keyword3",df.format(new Date()));
-                m.put("keyword1",new TemplateData(String.valueOf(booksPOList.size())));
-                m.put("keyword2",new TemplateData(name));
-                m.put("keyword3",new TemplateData(df.format(new Date())));
-//                m.put("keyword1",new TemplateData(String.valueOf(booksPOList.size())));
-//                m.put("keyword2",new TemplateData(name));
-//                m.put("keyword3",new TemplateData(df.format(new Date())));
-                //拼接数据
-                sendTemplateMessage.setTouser(openid);
-                sendTemplateMessage.setTemplate_id("ZPbSl2GmWzTGhxbZPzbgl8IaCF3-e0FsKkQ04gAm5ao");
-                sendTemplateMessage.setForm_id(formId);
-                sendTemplateMessage.setData(m);
-                sendTemplateMessage.setPage("/pages/my/my");
-                String json =  JSONObject.toJSONString(sendTemplateMessage);
-
-//                params2.put("touser", openid);
-//                params2.put("template_id", "ZPbSl2GmWzTGhxbZPzbgl8IaCF3-e0FsKkQ04gAm5ao");
-//                params2.put("form_id", formId);
-//                params2.put("data", JSON.toJSONString(m));
-//                String params2 = "touser="+openid+"&template_id=ZPbSl2GmWzTGhxbZPzbgl8IaCF3-e0FsKkQ04gAm5ao&form_id=63490a380aed455d874cbc19c10e6eee&data=''";
-                String r2 = HttpGetUtil.sendPost(
-                    "https://api.weixin.qq.com/cgi-bin/message/wxopen/template/send?access_token="+access,json);
-                System.out.println(r2);
-                return result;
+                sendMessage(formId,openid,name,request,response);
             }else{
                 return null;
             }
@@ -324,5 +292,65 @@ DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
          a = request.getRemoteAddr();
         System.out.println(a);
         return "test";
+    }
+
+    @ResponseBody
+    @RequestMapping("/sendMessage")
+    public String sendMessage(String formId,String openid,String name,HttpServletRequest request,HttpServletResponse response) throws Exception{
+        response.setContentType("text/html");
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
+        Map params = new HashMap();
+        params.put("grant_type", "client_credential");
+        params.put("appid", "wx97bb89632b1624c8");
+        params.put("secret", "308fcf3739300a17f7ced736b0b2e978");
+        String r = HttpGetUtil.httpRequestToString(
+            "https://api.weixin.qq.com/cgi-bin/token","GET" ,params);
+
+        AccessTokenDTO accessTokenDTO = JSON.parseObject(r, AccessTokenDTO.class);
+        String access = accessTokenDTO.getAccess_token();
+        System.out.println("access:"+access);
+        System.out.println("formId:"+formId);
+        SendTemplateMessage sendTemplateMessage = new SendTemplateMessage();
+                /*//拼接数据
+                Map<String,TemplateData> map = new HashMap<>();
+                map.put("keyword1",new TemplateData(String.valueOf(booksPOList.size())));
+                map.put("keyword2",new TemplateData(name));
+                map.put("keyword3",new TemplateData(df.format(new Date())));
+                sendTemplateMessage.setTouser(openid);
+                sendTemplateMessage.setTemplate_id("ZPbSl2GmWzTGhxbZPzbgl8IaCF3-e0FsKkQ04gAm5ao");
+                sendTemplateMessage.setPage("");
+                sendTemplateMessage.setForm_id(formId);
+                sendTemplateMessage.setData(map);
+                sendTemplateMessage.setEmphasis_keyword("");
+                String json =  JSONObject.toJSONString(sendTemplateMessage);*/
+        Map<String,TemplateData> m = new HashMap<>();
+        Map params2 = new HashMap();
+        //                m.put("keyword1",String.valueOf(booksPOList.size()));
+        //                m.put("keyword2",name);
+        //                m.put("keyword3",df.format(new Date()));
+//        m.put("keyword1",new TemplateData(num));
+        m.put("keyword1",new TemplateData(name));
+        m.put("keyword2",new TemplateData(df.format(new Date())));
+        //                m.put("keyword1",new TemplateData(String.valueOf(booksPOList.size())));
+        //                m.put("keyword2",new TemplateData(name));
+        //                m.put("keyword3",new TemplateData(df.format(new Date())));
+        //拼接数据
+        sendTemplateMessage.setTouser(openid);
+        sendTemplateMessage.setTemplate_id("FMbvqWYuiLab1eY2jQXyPOuBL3TU56fk31DtnzkPLTo");
+        sendTemplateMessage.setForm_id(formId);
+        sendTemplateMessage.setData(m);
+        sendTemplateMessage.setPage("/pages/index/index");
+        String json =  JSONObject.toJSONString(sendTemplateMessage);
+
+        //                params2.put("touser", openid);
+        //                params2.put("template_id", "ZPbSl2GmWzTGhxbZPzbgl8IaCF3-e0FsKkQ04gAm5ao");
+        //                params2.put("form_id", formId);
+        //                params2.put("data", JSON.toJSONString(m));
+        //                String params2 = "touser="+openid+"&template_id=ZPbSl2GmWzTGhxbZPzbgl8IaCF3-e0FsKkQ04gAm5ao&form_id=63490a380aed455d874cbc19c10e6eee&data=''";
+        String r2 = HttpGetUtil.sendPost(
+            "https://api.weixin.qq.com/cgi-bin/message/wxopen/template/send?access_token="+access,json);
+        System.out.println(r2);
+        return "OK";
     }
 }

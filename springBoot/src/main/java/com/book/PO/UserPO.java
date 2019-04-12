@@ -31,6 +31,9 @@ public class UserPO implements Serializable{
     @Column(name="avatar_Url")
     private String avatarUrl;
 
+//    @Column(name="uuid")
+//    private String uuid;
+
     @Override
     public String toString() {
         return "UserPO{" + "id=" + id + ", name='" + name + '\'' + ", nickName='" + nickName + '\'' + ", openid='"

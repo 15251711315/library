@@ -22,13 +22,11 @@ public class UserDTO implements Serializable{
 
     private String avatarUrl;
 
+    private String whichMP;
+
 //    private  String province;
 //
 //    private String city;
 
-    @Override
-    public String toString() {
-        return "UserDTO{" + "id=" + id + ", name='" + name + '\'' + ", nickName='" + nickName + '\'' + ", openid='"
-            + openid + '\'' + ", avatarUrl='" + avatarUrl + '\'' + '}';
-    }
+
 }
